@@ -30,7 +30,6 @@ export async function onRequestPost(context) {
     const result = await context.env.AI.run(IMAGE_MODEL, {
       prompt,
       steps: 4,
-      seed: Math.floor(Math.random() * 2147483647)
     });
 
     if (!result?.image) {
