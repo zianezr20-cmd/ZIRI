@@ -4,85 +4,881 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07130f">
-<title>ZIRI V3 — مساعدك الذكي الجزائري</title>
-<meta name="description" content="ZIRI — مساعد ذكي بلمسة جزائرية، من تطوير ZIANE RACHID.">
+<title>ZIRI — مساعدك الذكي الجزائري</title>
+<meta name="description" content="ZIRI — مساعد ذكي جزائري مع توليد الصور بالذكاء الاصطناعي.">
+
 <style>
-:root{--bg:#06100c;--panel:#0b1b14;--panel2:#10251c;--line:#1d3b2d;--text:#f4fff9;--muted:#9ab0a6;--accent:#35d18c;--accent2:#178a5a;--danger:#ff6873;--shadow:0 24px 70px #0008}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;background:radial-gradient(900px 500px at 70% -10%,#144e36 0%,transparent 55%),var(--bg);color:var(--text)}
-button,input,textarea{font:inherit}button{cursor:pointer} .app{display:flex;min-height:100vh}
-.side{width:290px;background:#07150fdd;border-left:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:14px;backdrop-filter:blur(14px)}
-.brand{display:flex;align-items:center;gap:11px;padding:5px}.logo{width:48px;height:48px;border-radius:14px;overflow:hidden;border:1px solid #3dd99555;box-shadow:0 8px 25px #0006}.logo img{width:100%;height:100%;object-fit:cover;display:block}.brand b{font-size:20px}.brand small{display:block;color:var(--muted);margin-top:2px}
-.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:13px;padding:11px 14px;transition:.2s}.btn:hover{transform:translateY(-1px);border-color:#3bd18e66}.primary{background:linear-gradient(135deg,var(--accent2),#2cbf80);border:0;color:#04130c;font-weight:800}
-.search{display:flex;gap:8px}.search input{width:100%;background:#091a13;border:1px solid var(--line);color:var(--text);border-radius:12px;padding:10px;outline:0}.history{overflow:auto;display:flex;flex-direction:column;gap:6px;min-height:120px}.chat-item{padding:10px 11px;border:1px solid transparent;border-radius:11px;color:#dcebe4;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:transparent}.chat-item:hover,.chat-item.active{background:#10281e;border-color:var(--line)}.profile{margin-top:auto;padding:12px;border:1px solid var(--line);border-radius:14px;background:#0b1b14}.profile span{color:var(--muted);font-size:12px}
-.main{flex:1;display:flex;flex-direction:column;min-width:0}.top{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:#07130fd9;backdrop-filter:blur(12px);position:sticky;top:0;z-index:3}.top .status{font-size:12px;color:#a9c8ba}.dot{display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:50%;margin-left:6px;box-shadow:0 0 14px var(--accent)}
-.content{width:min(950px,100%);margin:0 auto;flex:1;padding:40px 20px 30px;display:flex;flex-direction:column}.hero{text-align:center;padding:30px 10px 22px}.hero h1{font-size:clamp(34px,6vw,60px);margin:0 0 8px;letter-spacing:-2px}.hero h1 em{font-style:normal;color:var(--accent)}.hero p{color:var(--muted);margin:0 auto;max-width:680px;line-height:1.8}.quick{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:22px 0}.quick button{border:1px solid var(--line);background:#0b1c15;color:#d8ebe2;border-radius:999px;padding:9px 13px}.quick button:hover{border-color:var(--accent);color:white}
-.messages{display:flex;flex-direction:column;gap:12px;padding-bottom:25px}.msg{max-width:85%;padding:13px 15px;border-radius:16px;line-height:1.75;white-space:pre-wrap;word-break:break-word}.user{align-self:flex-start;background:linear-gradient(135deg,#176e4b,#125a3d);border:1px solid #36c88b33}.ai{align-self:flex-end;background:#0d2119;border:1px solid var(--line)}.meta{font-size:11px;color:var(--muted);margin-bottom:4px}.typing{opacity:.75}.composer{position:sticky;bottom:0;padding-top:10px;background:linear-gradient(transparent,var(--bg) 25%)}.box{background:#0b1d15;border:1px solid var(--line);border-radius:18px;padding:9px;box-shadow:var(--shadow);display:flex;align-items:flex-end;gap:8px}.box textarea{flex:1;resize:none;min-height:46px;max-height:160px;background:transparent;border:0;outline:0;color:var(--text);padding:9px;line-height:1.5}.send{width:46px;height:46px;border-radius:13px;border:0;background:var(--accent);color:#03120b;font-size:20px;font-weight:900}.hint{text-align:center;color:#738b80;font-size:11px;margin-top:8px}
+:root{
+  --bg:#06100c;
+  --panel:#0b1b14;
+  --panel2:#10251c;
+  --line:#1d3b2d;
+  --text:#f4fff9;
+  --muted:#9ab0a6;
+  --accent:#35d18c;
+  --accent2:#178a5a;
+  --shadow:0 24px 70px #0008
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  min-height:100%;
+  font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;
+  background:radial-gradient(900px 500px at 70% -10%,#144e36 0%,transparent 55%),var(--bg);
+  color:var(--text)
+}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+.side{
+  width:290px;
+  background:#07150fdd;
+  border-left:1px solid var(--line);
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  backdrop-filter:blur(14px)
+}
+.brand{display:flex;align-items:center;gap:11px;padding:5px}
+.logo{
+  width:48px;
+  height:48px;
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid #3dd99555;
+  box-shadow:0 8px 25px #0006
+}
+.logo img{width:100%;height:100%;object-fit:cover;display:block}
+.brand b{font-size:20px}
+.brand small{display:block;color:var(--muted);margin-top:2px}
+.btn{
+  border:1px solid var(--line);
+  background:var(--panel2);
+  color:var(--text);
+  border-radius:13px;
+  padding:11px 14px;
+  transition:.2s
+}
+.btn:hover{transform:translateY(-1px);border-color:#3bd18e66}
+.primary{
+  background:linear-gradient(135deg,var(--accent2),#2cbf80);
+  border:0;
+  color:#04130c;
+  font-weight:800
+}
+.imageBtn{
+  background:linear-gradient(135deg,#7c3aed,#a855f7);
+  border:0;
+  color:white;
+  font-weight:800
+}
+.search{display:flex;gap:8px}
+.search input{
+  width:100%;
+  background:#091a13;
+  border:1px solid var(--line);
+  color:var(--text);
+  border-radius:12px;
+  padding:10px;
+  outline:0
+}
+.history{
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-height:120px
+}
+.chat-item{
+  padding:10px 11px;
+  border:1px solid transparent;
+  border-radius:11px;
+  color:#dcebe4;
+  text-align:right;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  background:transparent
+}
+.chat-item:hover,.chat-item.active{
+  background:#10281e;
+  border-color:var(--line)
+}
+.profile{
+  margin-top:auto;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#0b1b14
+}
+.profile span{color:var(--muted);font-size:12px}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.top{
+  height:68px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 24px;
+  background:#07130fd9;
+  backdrop-filter:blur(12px);
+  position:sticky;
+  top:0;
+  z-index:3
+}
+.top .status{font-size:12px;color:#a9c8ba}
+.dot{
+  display:inline-block;
+  width:8px;
+  height:8px;
+  background:var(--accent);
+  border-radius:50%;
+  margin-left:6px;
+  box-shadow:0 0 14px var(--accent)
+}
+.content{
+  width:min(950px,100%);
+  margin:0 auto;
+  flex:1;
+  padding:40px 20px 30px;
+  display:flex;
+  flex-direction:column
+}
+.hero{text-align:center;padding:30px 10px 22px}
+.hero h1{
+  font-size:clamp(34px,6vw,60px);
+  margin:0 0 8px;
+  letter-spacing:-2px
+}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p{color:var(--muted);margin:0 auto;max-width:680px;line-height:1.8}
+.quick{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  margin:22px 0
+}
+.quick button{
+  border:1px solid var(--line);
+  background:#0b1c15;
+  color:#d8ebe2;
+  border-radius:999px;
+  padding:9px 13px
+}
+.quick button:hover{border-color:var(--accent);color:white}
+
+.messages{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  padding-bottom:25px
+}
+.msg{
+  max-width:85%;
+  padding:13px 15px;
+  border-radius:16px;
+  line-height:1.75;
+  white-space:pre-wrap;
+  word-break:break-word
+}
+.user{
+  align-self:flex-start;
+  background:linear-gradient(135deg,#176e4b,#125a3d);
+  border:1px solid #36c88b33
+}
+.ai{
+  align-self:flex-end;
+  background:#0d2119;
+  border:1px solid var(--line)
+}
+.meta{font-size:11px;color:var(--muted);margin-bottom:4px}
+.typing{opacity:.75}
+
+.image-card{
+  align-self:flex-end;
+  width:min(520px,90%);
+  background:#0d2119;
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:12px;
+  margin-top:5px
+}
+.image-card img{
+  width:100%;
+  display:block;
+  border-radius:13px
+}
+.image-title{
+  color:#dcebe4;
+  font-size:13px;
+  margin-bottom:9px
+}
+.download{
+  display:inline-block;
+  margin-top:10px;
+  padding:8px 12px;
+  border-radius:10px;
+  background:var(--accent);
+  color:#03120b;
+  text-decoration:none;
+  font-weight:700
+}
+
+.composer{
+  position:sticky;
+  bottom:0;
+  padding-top:10px;
+  background:linear-gradient(transparent,var(--bg) 25%)
+}
+.box{
+  background:#0b1d15;
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:9px;
+  box-shadow:var(--shadow);
+  display:flex;
+  align-items:flex-end;
+  gap:8px
+}
+.box textarea{
+  flex:1;
+  resize:none;
+  min-height:46px;
+  max-height:160px;
+  background:transparent;
+  border:0;
+  outline:0;
+  color:var(--text);
+  padding:9px;
+  line-height:1.5
+}
+.send,.generate{
+  width:46px;
+  height:46px;
+  border-radius:13px;
+  border:0;
+  font-size:19px;
+  font-weight:900
+}
+.send{background:var(--accent);color:#03120b}
+.generate{background:#8b5cf6;color:white}
+.hint{text-align:center;color:#738b80;font-size:11px;margin-top:8px}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:#0009;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:10
+}
+.modal.open{display:flex}
+.card{
+  max-width:520px;
+  width:100%;
+  background:#0b1d15;
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:22px;
+  box-shadow:var(--shadow)
+}
+.card h2{margin-top:0}
+.close{
+  float:left;
+  background:none;
+  border:0;
+  color:var(--muted);
+  font-size:22px
+}
 .mobile{display:none}
-.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}.modal.open{display:flex}.card{max-width:520px;width:100%;background:#0b1d15;border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow)}.card h2{margin-top:0}.close{float:left;background:none;border:0;color:var(--muted);font-size:22px}
-@media(max-width:800px){.side{display:none}.mobile{display:block}.top{padding:0 14px}.content{padding:25px 12px 20px}.hero{padding-top:25px}.msg{max-width:92%}}
+
+@media(max-width:800px){
+  .side{display:none}
+  .mobile{display:block}
+  .top{padding:0 14px}
+  .content{padding:25px 12px 20px}
+  .hero{padding-top:25px}
+  .msg{max-width:92%}
+}
 </style>
 </head>
+
 <body>
+
 <div class="app">
+
 <aside class="side">
-  <div class="brand"><div class="logo"><img src="assets/ziane-logo.png" alt="ZIANE RACHID"></div><div><b>ZIRI</b><small>مساعدك الذكي الجزائري</small></div></div>
-  <button class="btn primary" id="newChat">＋ محادثة جديدة</button>
-  <div class="search"><input id="search" placeholder="بحث في المحادثات..."></div>
-  <div class="history" id="history"></div>
-  <button class="btn" id="about">ℹ️ حول ZIRI</button>
-  <div class="profile"><b>زائر</b><br><span>يمكنك تجربة ZIRI بدون إنشاء حساب.</span></div>
-</aside>
-<main class="main">
-<header class="top"><div><b>ZIRI</b> <span class="mobile">🇩🇿</span></div><div class="status"><span class="dot"></span><span id="status">جاهز</span></div></header>
-<section class="content">
-  <div class="hero" id="hero">
-    <h1>أهلاً بك في <em>ZIRI</em></h1>
-    <p>مساعد ذكي بواجهة جزائرية، مصمم ليكون سريعًا وبسيطًا وقابلًا للتطور.</p>
-    <div class="quick">
-      <button data-prompt="اشرح لي كيف أبدأ مشروعًا صغيرًا في الجزائر">💡 فكرة مشروع</button>
-      <button data-prompt="اكتب لي خطة تعلم البرمجة من الصفر">📚 خطة تعلم</button>
-      <button data-prompt="ساعدني في كتابة صفحة HTML احترافية">💻 برمجة</button>
-      <button data-prompt="تحدث معي بالدارجة الجزائرية">🇩🇿 دارجة</button>
+
+  <div class="brand">
+    <div class="logo">
+      <img src="assets/ziane-logo.png" alt="ZIANE RACHID">
+    </div>
+    <div>
+      <b>ZIRI</b>
+      <small>مساعدك الذكي الجزائري</small>
     </div>
   </div>
-  <div class="messages" id="messages"></div>
-  <div class="composer">
-    <div class="box"><textarea id="input" rows="1" placeholder="اكتب رسالتك إلى ZIRI..."></textarea><button class="send" id="send" title="إرسال">➤</button></div>
-    <div class="hint">ZIRI V3 • مساعد ذكاء اصطناعي جزائري يعمل عبر Cloudflare Workers AI.</div>
+
+  <button class="btn primary" id="newChat">＋ محادثة جديدة</button>
+
+  <button class="btn imageBtn" id="imageButton">
+    🎨 إنشاء صورة
+  </button>
+
+  <div class="search">
+    <input id="search" placeholder="بحث في المحادثات...">
   </div>
+
+  <div class="history" id="history"></div>
+
+  <button class="btn" id="about">ℹ️ حول ZIRI</button>
+
+  <div class="profile">
+    <b>زائر</b><br>
+    <span>يمكنك تجربة ZIRI بدون إنشاء حساب.</span>
+  </div>
+
+</aside>
+
+<main class="main">
+
+<header class="top">
+  <div>
+    <b>ZIRI</b>
+    <span class="mobile">🇩🇿</span>
+  </div>
+
+  <div class="status">
+    <span class="dot"></span>
+    <span id="status">جاهز</span>
+  </div>
+</header>
+
+<section class="content">
+
+<div class="hero" id="hero">
+
+  <h1>أهلاً بك في <em>ZIRI</em></h1>
+
+  <p>
+    مساعد ذكي بواجهة جزائرية، الآن مع إمكانية إنشاء الصور بالذكاء الاصطناعي.
+  </p>
+
+  <div class="quick">
+
+    <button data-prompt="اشرح لي كيف أبدأ مشروعًا صغيرًا في الجزائر">
+      💡 فكرة مشروع
+    </button>
+
+    <button data-prompt="اكتب لي خطة تعلم البرمجة من الصفر">
+      📚 خطة تعلم
+    </button>
+
+    <button data-prompt="ساعدني في كتابة صفحة HTML احترافية">
+      💻 برمجة
+    </button>
+
+    <button data-prompt="تحدث معي بالدارجة الجزائرية">
+      🇩🇿 دارجة
+    </button>
+
+    <button id="heroImage">
+      🎨 إنشاء صورة
+    </button>
+
+  </div>
+
+</div>
+
+<div class="messages" id="messages"></div>
+
+<div class="composer">
+
+  <div class="box">
+
+    <textarea
+      id="input"
+      rows="1"
+      placeholder="اكتب رسالتك إلى ZIRI..."
+    ></textarea>
+
+    <button
+      class="generate"
+      id="generate"
+      title="إنشاء صورة"
+    >🎨</button>
+
+    <button
+      class="send"
+      id="send"
+      title="إرسال"
+    >➤</button>
+
+  </div>
+
+  <div class="hint">
+    ZIRI • مساعد ذكاء اصطناعي جزائري + توليد الصور بالذكاء الاصطناعي
+  </div>
+
+</div>
+
 </section>
 </main>
 </div>
 
-<div class="modal" id="modal"><div class="card"><button class="close" id="close">×</button><h2>عن ZIRI 🇩🇿</h2><p>ZIRI مشروع مساعد ذكي بلمسة جزائرية.</p><p><b>المطور:</b> ZIANE RACHID<br><b>البريد:</b> ZIANE200018@GMAIL.COM<br><b>الهاتف:</b> 0552920520</p><p style="color:var(--muted)">هذه النسخة تستخدم Cloudflare Pages Functions + Workers AI، مع هوية وتعليمات خاصة بـ ZIRI. لا تضع أي مفتاح API سري داخل الواجهة.</p></div></div>
+<div class="modal" id="modal">
+
+<div class="card">
+
+<button class="close" id="close">×</button>
+
+<h2>عن ZIRI 🇩🇿</h2>
+
+<p>ZIRI مشروع مساعد ذكي بلمسة جزائرية.</p>
+
+<p>
+<b>المطور:</b> ZIANE RACHID<br>
+<b>البريد:</b> ZIANE200018@GMAIL.COM<br>
+<b>الهاتف:</b> 0552920520
+</p>
+
+<p style="color:var(--muted)">
+ZIRI يستخدم Cloudflare Pages Functions وWorkers AI.
+</p>
+
+</div>
+</div>
 
 <script>
-const KEY="ziri_v2_chats";
-let chats=JSON.parse(localStorage.getItem(KEY)||"[]"), current=null;
-const $=s=>document.querySelector(s);
-function save(){localStorage.setItem(KEY,JSON.stringify(chats))}
-function newChat(){current={id:Date.now(),title:"محادثة جديدة",messages:[]};chats.unshift(current);save();renderHistory();renderMessages()}
-function renderHistory(filter=""){const h=$("#history");h.innerHTML="";chats.filter(c=>c.title.includes(filter)).slice(0,30).forEach(c=>{const b=document.createElement("button");b.className="chat-item"+(current?.id===c.id?" active":"");b.textContent=c.title;b.onclick=()=>{current=c;renderHistory();renderMessages()};h.appendChild(b)})}
-function renderMessages(){const m=$("#messages");m.innerHTML="";$("#hero").style.display=current?.messages.length?"none":"block";(current?.messages||[]).forEach(x=>{const d=document.createElement("div");d.className="msg "+(x.role==="user"?"user":"ai");d.innerHTML="<div class='meta'>"+(x.role==="user"?"أنت":"ZIRI")+"</div>"+escapeHtml(x.content);m.appendChild(d)});m.scrollTop=m.scrollHeight}
-function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
-async function sendMessage(text){text=(text||$("#input").value).trim();if(!text)return;if(!current)newChat();current.title=current.messages.length?current.title:(text.length>34?text.slice(0,34)+"…":text);current.messages.push({role:"user",content:text});$("#input").value="";$("#status").textContent="يفكر...";renderMessages();save();renderHistory();
-const typing={role:"assistant",content:"جاري التفكير…"};const box=document.createElement("div");box.className="msg ai typing";box.textContent=typing.content;$("#messages").appendChild(box);
-try{
- const r=await fetch("/api/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({messages:current.messages.slice(-12)})});
- const data=await r.json(); if(!r.ok) throw new Error(data.error||"تعذر الاتصال");
- box.remove(); current.messages.push({role:"assistant",content:data.response||"لم يصل رد من النموذج."});
-}catch(e){
- box.textContent="تعذر تشغيل الذكاء الاصطناعي حاليًا. تأكد من إضافة Workers AI Binding باسم AI في Cloudflare Pages. ("+e.message+")";
+
+const KEY = "ziri_v5_chats";
+
+let chats = JSON.parse(
+  localStorage.getItem(KEY) || "[]"
+);
+
+let current = null;
+
+const $ = s => document.querySelector(s);
+
+function save(){
+  localStorage.setItem(KEY, JSON.stringify(chats));
 }
-$("#status").textContent="جاهز";save();renderMessages();renderHistory();
+
+function newChat(){
+
+  current = {
+    id: Date.now(),
+    title: "محادثة جديدة",
+    messages: []
+  };
+
+  chats.unshift(current);
+
+  save();
+  renderHistory();
+  renderMessages();
 }
-$("#send").onclick=()=>sendMessage();$("#newChat").onclick=newChat;
-$("#input").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}});
-$("#input").addEventListener("input",e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,160)+"px"});
-$("#search").oninput=e=>renderHistory(e.target.value.trim());
-document.querySelectorAll("[data-prompt]").forEach(b=>b.onclick=()=>sendMessage(b.dataset.prompt));
-$("#about").onclick=()=>$("#modal").classList.add("open");$("#close").onclick=()=>$("#modal").classList.remove("open");$("#modal").onclick=e=>{if(e.target.id==="modal")$("#modal").classList.remove("open")};
-if(chats.length){current=chats[0];renderHistory();renderMessages()}else{renderHistory();renderMessages()}
+
+function renderHistory(filter=""){
+
+  const h = $("#history");
+
+  h.innerHTML = "";
+
+  chats
+    .filter(c => c.title.includes(filter))
+    .slice(0,30)
+    .forEach(c => {
+
+      const b = document.createElement("button");
+
+      b.className =
+        "chat-item" +
+        (current?.id === c.id ? " active" : "");
+
+      b.textContent = c.title;
+
+      b.onclick = () => {
+
+        current = c;
+
+        renderHistory();
+        renderMessages();
+
+      };
+
+      h.appendChild(b);
+
+    });
+}
+
+function escapeHtml(s){
+
+  return s.replace(
+    /[&<>"']/g,
+    c => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[c])
+  );
+
+}
+
+function renderMessages(){
+
+  const m = $("#messages");
+
+  m.innerHTML = "";
+
+  $("#hero").style.display =
+    current?.messages.length ? "none" : "block";
+
+  (current?.messages || []).forEach(x => {
+
+    const d = document.createElement("div");
+
+    d.className =
+      "msg " +
+      (x.role === "user" ? "user" : "ai");
+
+    d.innerHTML =
+      "<div class='meta'>" +
+      (x.role === "user" ? "أنت" : "ZIRI") +
+      "</div>" +
+      escapeHtml(x.content);
+
+    m.appendChild(d);
+
+  });
+
+}
+
+async function sendMessage(text){
+
+  text = (
+    text || $("#input").value
+  ).trim();
+
+  if(!text) return;
+
+  if(!current) newChat();
+
+  current.title =
+    current.messages.length
+      ? current.title
+      : (
+        text.length > 34
+          ? text.slice(0,34)+"…"
+          : text
+      );
+
+  current.messages.push({
+    role:"user",
+    content:text
+  });
+
+  $("#input").value = "";
+
+  $("#status").textContent = "يفكر...";
+
+  renderMessages();
+
+  save();
+
+  renderHistory();
+
+  const typing =
+    document.createElement("div");
+
+  typing.className = "msg ai typing";
+
+  typing.textContent =
+    "جاري التفكير…";
+
+  $("#messages").appendChild(typing);
+
+  try{
+
+    const r = await fetch(
+      "/api/chat",
+      {
+        method:"POST",
+        headers:{
+          "content-type":"application/json"
+        },
+        body:JSON.stringify({
+          messages:current.messages.slice(-12)
+        })
+      }
+    );
+
+    const data = await r.json();
+
+    if(!r.ok)
+      throw new Error(
+        data.error || "تعذر الاتصال"
+      );
+
+    typing.remove();
+
+    current.messages.push({
+      role:"assistant",
+      content:
+        data.response ||
+        "لم يصل رد من النموذج."
+    });
+
+  }catch(e){
+
+    typing.textContent =
+      "تعذر تشغيل ZIRI حاليًا. " +
+      e.message;
+
+  }
+
+  $("#status").textContent = "جاهز";
+
+  save();
+
+  renderMessages();
+
+  renderHistory();
+}
+
+async function generateImage(){
+
+  const prompt =
+    $("#input").value.trim();
+
+  if(!prompt){
+
+    alert(
+      "اكتب وصف الصورة أولاً.\nمثال: مدينة جزائرية مستقبلية في الليل"
+    );
+
+    $("#input").focus();
+
+    return;
+  }
+
+  $("#status").textContent =
+    "يتم إنشاء الصورة...";
+
+  const typing =
+    document.createElement("div");
+
+  typing.className =
+    "msg ai typing";
+
+  typing.textContent =
+    "🎨 ZIRI يقوم بإنشاء الصورة…";
+
+  $("#messages").appendChild(typing);
+
+  try{
+
+    const r = await fetch(
+      "/api/generate-image",
+      {
+        method:"POST",
+        headers:{
+          "content-type":"application/json"
+        },
+        body:JSON.stringify({
+          prompt
+        })
+      }
+    );
+
+    const data = await r.json();
+
+    if(!r.ok)
+      throw new Error(
+        data.error || "تعذر إنشاء الصورة"
+      );
+
+    typing.remove();
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "image-card";
+
+    const title =
+      document.createElement("div");
+
+    title.className =
+      "image-title";
+
+    title.textContent =
+      "🎨 الصورة التي أنشأها ZIRI";
+
+    const img =
+      document.createElement("img");
+
+    img.src = data.image;
+
+    img.alt = prompt;
+
+    const download =
+      document.createElement("a");
+
+    download.className =
+      "download";
+
+    download.textContent =
+      "⬇️ حفظ الصورة";
+
+    download.href =
+      data.image;
+
+    download.download =
+      "ziri-image.jpg";
+
+    card.appendChild(title);
+    card.appendChild(img);
+    card.appendChild(download);
+
+    $("#messages").appendChild(card);
+
+    $("#input").value = "";
+
+  }catch(e){
+
+    typing.textContent =
+      "❌ تعذر إنشاء الصورة: " +
+      e.message;
+
+  }
+
+  $("#status").textContent =
+    "جاهز";
+
+}
+
+$("#send").onclick =
+  () => sendMessage();
+
+$("#generate").onclick =
+  () => generateImage();
+
+$("#imageButton").onclick =
+  () => {
+
+    $("#input").focus();
+
+    $("#input").placeholder =
+      "اكتب وصف الصورة التي تريد إنشاءها...";
+
+  };
+
+$("#heroImage").onclick =
+  () => {
+
+    $("#input").focus();
+
+    $("#input").placeholder =
+      "مثال: مسجد جزائري مستقبلي وقت الغروب...";
+
+  };
+
+$("#newChat").onclick =
+  newChat;
+
+$("#input").addEventListener(
+  "keydown",
+  e => {
+
+    if(
+      e.key === "Enter" &&
+      !e.shiftKey
+    ){
+
+      e.preventDefault();
+
+      sendMessage();
+
+    }
+
+  }
+);
+
+$("#input").addEventListener(
+  "input",
+  e => {
+
+    e.target.style.height =
+      "auto";
+
+    e.target.style.height =
+      Math.min(
+        e.target.scrollHeight,
+        160
+      ) + "px";
+
+  }
+);
+
+$("#search").oninput =
+  e =>
+    renderHistory(
+      e.target.value.trim()
+    );
+
+document
+  .querySelectorAll("[data-prompt]")
+  .forEach(
+    b =>
+      b.onclick =
+        () =>
+          sendMessage(
+            b.dataset.prompt
+          )
+  );
+
+$("#about").onclick =
+  () =>
+    $("#modal")
+      .classList
+      .add("open");
+
+$("#close").onclick =
+  () =>
+    $("#modal")
+      .classList
+      .remove("open");
+
+$("#modal").onclick =
+  e => {
+
+    if(e.target.id === "modal")
+      $("#modal")
+        .classList
+        .remove("open");
+
+  };
+
+if(chats.length){
+
+  current = chats[0];
+
+}
+
+renderHistory();
+
+renderMessages();
+
 </script>
+
 </body>
 </html>
