@@ -1,712 +1,407 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZIRI V3 — مساعدك الذكي الجزائري</title>
+// ZIRI V4 — Multilingual AI Assistant
+// Cloudflare Pages Function
+// Workers AI binding: AI
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+const MODEL = "@cf/meta/llama-3.1-8b-instruct-fast";
+
+const IDENTITY = `
+You are ZIRI, a multilingual artificial intelligence assistant with an Algerian identity.
+
+PROJECT:
+- Name: ZIRI
+- Identity: Algerian AI assistant
+- Developer: ZIANE RACHID
+- Email: ZIANE200018@GMAIL.COM
+- Phone: 0552920520
+
+IDENTITY RULES:
+- If asked who you are, say you are ZIRI, an AI assistant with an Algerian identity.
+- If asked who developed or created you, say that the ZIRI project was developed by ZIANE RACHID.
+- Never claim that Meta created ZIRI.
+- Cloudflare is the technology platform used by the project to run AI services.
+- Never invent additional personal information about ZIANE RACHID.
+
+LANGUAGE:
+- Detect the language used by the user automatically.
+- Reply in the same language whenever possible.
+- Support Arabic, Algerian Darija, French, English, Spanish, Portuguese,
+  Italian, German, Dutch, Turkish, Russian, Ukrainian, Polish, Romanian,
+  Greek, Hebrew, Persian, Urdu, Hindi, Bengali, Chinese, Japanese, Korean,
+  Vietnamese, Thai, Indonesian, Malay, Swahili and other languages supported
+  by the AI model.
+- If the user mixes languages, understand the mixture and reply naturally.
+- Algerian Darija should be answered naturally when the user uses Darija.
+
+KNOWLEDGE:
+- Use your internal knowledge for general questions.
+- When external search results are provided, use them carefully.
+- Never invent facts, sources, URLs, people, dates or statistics.
+- If information is uncertain or unavailable, clearly say so.
+- Do not claim to have searched the internet unless search results were actually provided.
+
+STYLE:
+- Be helpful, clear and natural.
+- Simple questions should receive concise answers.
+- Complex questions can receive detailed explanations.
+- For programming, provide practical and usable solutions.
+`;
+
+function cleanText(text, max = 5000) {
+  if (typeof text !== "string") return "";
+  return text.replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+// Detect common languages/scripts
+function detectLanguage(text) {
+  const q = text.toLowerCase();
+
+  if (/[\u4e00-\u9fff]/.test(text)) return "zh";
+  if (/[\u3040-\u30ff]/.test(text)) return "ja";
+  if (/[\uac00-\ud7af]/.test(text)) return "ko";
+  if (/[\u0900-\u097f]/.test(text)) return "hi";
+  if (/[\u0980-\u09ff]/.test(text)) return "bn";
+  if (/[\u0a80-\u0aff]/.test(text)) return "gu";
+  if (/[\u0b80-\u0bff]/.test(text)) return "ta";
+  if (/[\u0c00-\u0c7f]/.test(text)) return "te";
+  if (/[\u0d00-\u0d7f]/.test(text)) return "ml";
+  if (/[\u0400-\u04ff]/.test(text)) return "ru";
+  if (/[\u0590-\u05ff]/.test(text)) return "he";
+  if (/[\u0600-\u06ff]/.test(text)) {
+    if (/\b(وش|واش|راك|راني|صحا|بصح|كاين|شحال|علاش|كيفاش)\b/.test(q)) {
+      return "ar";
     }
-
-    body {
-      font-family: Arial, Tahoma, sans-serif;
-      background: #f5f7fa;
-      color: #172033;
-      min-height: 100vh;
-    }
-
-    header {
-      height: 72px;
-      background: #ffffff;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .brand img {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      object-fit: cover;
-    }
-
-    .brand-text h1 {
-      font-size: 20px;
-    }
-
-    .brand-text span {
-      font-size: 12px;
-      color: #6b7280;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    button {
-      border: 0;
-      cursor: pointer;
-      font-family: inherit;
-    }
-
-    .top-btn {
-      background: #f0f2f5;
-      padding: 10px 14px;
-      border-radius: 10px;
-      color: #273142;
-      font-weight: 600;
-    }
-
-    .top-btn:hover {
-      background: #e5e7eb;
-    }
-
-    main {
-      max-width: 1050px;
-      margin: auto;
-      padding: 30px 18px 130px;
-    }
-
-    .welcome {
-      text-align: center;
-      padding: 35px 10px 25px;
-    }
-
-    .welcome-logo {
-      width: 80px;
-      height: 80px;
-      border-radius: 22px;
-      object-fit: cover;
-      margin-bottom: 16px;
-    }
-
-    .welcome h2 {
-      font-size: 30px;
-      margin-bottom: 8px;
-    }
-
-    .welcome p {
-      color: #667085;
-      line-height: 1.7;
-    }
-
-    .quick-prompts {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin: 20px 0 30px;
-    }
-
-    .prompt {
-      background: #ffffff;
-      border: 1px solid #e4e7ec;
-      border-radius: 14px;
-      padding: 16px;
-      text-align: right;
-      transition: 0.2s;
-    }
-
-    .prompt:hover {
-      transform: translateY(-2px);
-      border-color: #b8c0cc;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-    }
-
-    .prompt strong {
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    .prompt small {
-      color: #667085;
-    }
-
-    #chat {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .message {
-      display: flex;
-      width: 100%;
-    }
-
-    .message.user {
-      justify-content: flex-start;
-    }
-
-    .message.assistant {
-      justify-content: flex-end;
-    }
-
-    .bubble {
-      max-width: 78%;
-      padding: 14px 17px;
-      border-radius: 18px;
-      line-height: 1.75;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .user .bubble {
-      background: #172033;
-      color: #ffffff;
-      border-bottom-left-radius: 5px;
-    }
-
-    .assistant .bubble {
-      background: #ffffff;
-      border: 1px solid #e4e7ec;
-      border-bottom-right-radius: 5px;
-    }
-
-    .typing {
-      opacity: 0.65;
-      font-style: italic;
-    }
-
-    .composer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255,255,255,0.96);
-      backdrop-filter: blur(10px);
-      border-top: 1px solid #e5e7eb;
-      padding: 12px 16px;
-      z-index: 20;
-    }
-
-    .composer-inner {
-      max-width: 1050px;
-      margin: auto;
-      display: flex;
-      gap: 10px;
-    }
-
-    #messageInput {
-      flex: 1;
-      min-height: 52px;
-      max-height: 150px;
-      resize: vertical;
-      border: 1px solid #d0d5dd;
-      border-radius: 14px;
-      padding: 14px;
-      font-family: inherit;
-      font-size: 15px;
-      outline: none;
-    }
-
-    #messageInput:focus {
-      border-color: #667085;
-    }
-
-    #sendBtn {
-      width: 58px;
-      border-radius: 14px;
-      background: #172033;
-      color: white;
-      font-size: 20px;
-    }
-
-    #sendBtn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .status {
-      max-width: 1050px;
-      margin: 7px auto 0;
-      font-size: 12px;
-      color: #667085;
-      padding: 0 4px;
-    }
-
-    footer {
-      text-align: center;
-      color: #98a2b3;
-      font-size: 12px;
-      margin-top: 30px;
-    }
-
-    .modal-bg {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .modal-bg.show {
-      display: flex;
-    }
-
-    .modal {
-      background: white;
-      width: min(500px, 100%);
-      border-radius: 20px;
-      padding: 25px;
-      position: relative;
-    }
-
-    .modal h3 {
-      margin-bottom: 15px;
-    }
-
-    .modal p {
-      line-height: 1.8;
-      color: #475467;
-      margin-bottom: 8px;
-    }
-
-    .close-modal {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      background: #f2f4f7;
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      font-size: 18px;
-    }
-
-    @media (max-width: 750px) {
-      header {
-        padding: 0 12px;
-      }
-
-      .top-btn {
-        padding: 8px 10px;
-        font-size: 12px;
-      }
-
-      .quick-prompts {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .bubble {
-        max-width: 90%;
-      }
-
-      .welcome h2 {
-        font-size: 25px;
-      }
-    }
-
-    @media (max-width: 450px) {
-      .brand-text span {
-        display: none;
-      }
-
-      .quick-prompts {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
-</head>
-
-<body>
-
-<header>
-  <div class="brand">
-    <img src="assets/ziane-logo.png" alt="ZIRI">
-    <div class="brand-text">
-      <h1>ZIRI</h1>
-      <span>مساعدك الذكي الجزائري — V3</span>
-    </div>
-  </div>
-
-  <div class="header-actions">
-    <button class="top-btn" id="newChatBtn">＋ محادثة جديدة</button>
-    <button class="top-btn" id="aboutBtn">حول ZIRI</button>
-  </div>
-</header>
-
-<main>
-
-  <section class="welcome" id="welcome">
-    <img
-      class="welcome-logo"
-      src="assets/ziane-logo.png"
-      alt="ZIRI"
-    >
-
-    <h2>مرحبا، أنا ZIRI 👋</h2>
-
-    <p>
-      مساعد ذكاء اصطناعي جزائري يساعدك في الأسئلة، البرمجة،
-      الأفكار والمعلومات.
-    </p>
-  </section>
-
-  <section class="quick-prompts" id="quickPrompts">
-
-    <button class="prompt" data-prompt="من أنت؟">
-      <strong>من أنت؟</strong>
-      <small>تعرف على ZIRI</small>
-    </button>
-
-    <button class="prompt" data-prompt="من مطورك؟">
-      <strong>من مطورك؟</strong>
-      <small>تعرف على صاحب المشروع</small>
-    </button>
-
-    <button class="prompt" data-prompt="ساعدني في تعلم البرمجة">
-      <strong>تعلم البرمجة</strong>
-      <small>ابدأ رحلة البرمجة</small>
-    </button>
-
-    <button class="prompt" data-prompt="اعطني فكرة مشروع مربح">
-      <strong>فكرة مشروع</strong>
-      <small>أفكار عملية ومبتكرة</small>
-    </button>
-
-  </section>
-
-  <section id="chat"></section>
-
-  <footer>
-    ZIRI V3 — يستخدم Cloudflare Workers AI
-  </footer>
-
-</main>
-
-<div class="composer">
-  <div class="composer-inner">
-
-    <textarea
-      id="messageInput"
-      placeholder="اكتب رسالتك هنا..."
-      rows="1"
-    ></textarea>
-
-    <button id="sendBtn" title="إرسال">
-      ➤
-    </button>
-
-  </div>
-
-  <div class="status" id="status">
-    جاهز
-  </div>
-</div>
-
-<div class="modal-bg" id="aboutModal">
-
-  <div class="modal">
-
-    <button class="close-modal" id="closeModal">×</button>
-
-    <h3>حول ZIRI</h3>
-
-    <p>
-      ZIRI هو مشروع مساعد ذكاء اصطناعي بهوية جزائرية.
-    </p>
-
-    <p>
-      تم تطوير المشروع بواسطة:
-      <strong>ZIANE RACHID</strong>
-    </p>
-
-    <p>
-      البريد:
-      <strong>ZIANE200018@GMAIL.COM</strong>
-    </p>
-
-    <p>
-      الهاتف:
-      <strong>0552920520</strong>
-    </p>
-
-    <p>
-      يعتمد ZIRI على Cloudflare Workers AI لتشغيل نموذج الذكاء الاصطناعي.
-    </p>
-
-  </div>
-
-</div>
-
-<script>
-  const CHAT_KEY = "ziri_v3_chat";
-  const HISTORY_KEY = "ziri_v3_history";
-
-  const chat = document.getElementById("chat");
-  const input = document.getElementById("messageInput");
-  const sendBtn = document.getElementById("sendBtn");
-  const status = document.getElementById("status");
-  const newChatBtn = document.getElementById("newChatBtn");
-  const aboutBtn = document.getElementById("aboutBtn");
-  const aboutModal = document.getElementById("aboutModal");
-  const closeModal = document.getElementById("closeModal");
-  const welcome = document.getElementById("welcome");
-  const quickPrompts = document.getElementById("quickPrompts");
-
-  let messages = [];
-
-  /*
-   * V3 لا تستعمل تخزين V2.
-   * هذا يجعل المحادثة القديمة لا تظهر تلقائياً.
-   */
-
-  function saveMessages() {
-    localStorage.setItem(CHAT_KEY, JSON.stringify(messages));
+    return "ar";
   }
 
-  function loadMessages() {
-    try {
-      const saved = localStorage.getItem(CHAT_KEY);
+  if (/\b(le|la|les|des|une|est|avec|pour|dans|bonjour|comment)\b/.test(q)) {
+    return "fr";
+  }
 
-      if (saved) {
-        const parsed = JSON.parse(saved);
+  if (/\b(el|la|los|las|una|para|hola|cómo|que)\b/.test(q)) {
+    return "es";
+  }
 
-        if (Array.isArray(parsed)) {
-          messages = parsed;
+  if (/\b(der|die|das|und|ist|für|nicht|hallo|wie)\b/.test(q)) {
+    return "de";
+  }
+
+  if (/\b(il|lo|la|gli|una|per|ciao|come)\b/.test(q)) {
+    return "it";
+  }
+
+  if (/\b(o|a|os|as|uma|para|como|olá|você)\b/.test(q)) {
+    return "pt";
+  }
+
+  if (/\b(de|het|een|voor|hoe|hallo|niet)\b/.test(q)) {
+    return "nl";
+  }
+
+  if (/\b(bir|ve|için|nasıl|merhaba|değil)\b/.test(q)) {
+    return "tr";
+  }
+
+  if (/\b(hej|hur|och|inte|för)\b/.test(q)) {
+    return "sv";
+  }
+
+  return "en";
+}
+
+// Wikipedia language endpoint
+async function searchWikipedia(query, language) {
+  try {
+    const supported = [
+      "ar", "en", "fr", "es", "de", "it", "pt", "nl",
+      "tr", "ru", "uk", "pl", "ro", "el", "he", "fa",
+      "ur", "hi", "bn", "zh", "ja", "ko", "vi", "th",
+      "id", "ms", "sw", "sv"
+    ];
+
+    const lang = supported.includes(language) ? language : "en";
+
+    const url =
+      `https://${lang}.wikipedia.org/w/api.php` +
+      `?action=query` +
+      `&generator=search` +
+      `&gsrsearch=${encodeURIComponent(query)}` +
+      `&gsrlimit=5` +
+      `&prop=extracts|info` +
+      `&exintro=1` +
+      `&explaintext=1` +
+      `&inprop=url` +
+      `&format=json` +
+      `&origin=*`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) return [];
+
+    const data = await response.json();
+    const pages = data?.query?.pages || {};
+
+    return Object.values(pages)
+      .map(page => ({
+        title: cleanText(page.title || "", 300),
+        text: cleanText(page.extract || "", 2500),
+        url: page.fullurl || ""
+      }))
+      .filter(item => item.text);
+
+  } catch {
+    return [];
+  }
+}
+
+// DuckDuckGo general search information
+async function searchDuckDuckGo(query) {
+  try {
+    const url =
+      "https://api.duckduckgo.com/" +
+      `?q=${encodeURIComponent(query)}` +
+      "&format=json" +
+      "&no_html=1" +
+      "&skip_disambig=0";
+
+    const response = await fetch(url);
+
+    if (!response.ok) return [];
+
+    const data = await response.json();
+
+    const results = [];
+
+    if (data?.AbstractText) {
+      results.push({
+        title: cleanText(data.Heading || query, 300),
+        text: cleanText(data.AbstractText, 2500),
+        url: data.AbstractURL || ""
+      });
+    }
+
+    if (Array.isArray(data?.RelatedTopics)) {
+      for (const item of data.RelatedTopics.slice(0, 6)) {
+        if (item?.Text) {
+          results.push({
+            title: cleanText(
+              item.Text.split(" - ")[0] || query,
+              300
+            ),
+            text: cleanText(item.Text, 1800),
+            url: item.FirstURL || ""
+          });
         }
       }
-    } catch (error) {
-      messages = [];
+    }
+
+    return results;
+
+  } catch {
+    return [];
+  }
+}
+
+// Questions that benefit from external information
+function needsSearch(query) {
+  const q = query.toLowerCase();
+
+  const words = [
+    "today", "tonight", "now", "latest", "recent",
+    "current", "news", "price", "prices", "score",
+    "result", "results", "schedule", "weather",
+    "2024", "2025", "2026",
+    "اليوم", "الآن", "درك", "حاليا", "حالياً",
+    "آخر", "اخر", "جديد", "حديث", "خبر", "أخبار",
+    "سعر", "أسعار", "نتيجة", "نتائج", "موعد",
+    "من هو", "من هي", "ما هو", "ما هي",
+    "aujourd", "maintenant", "dernier", "dernière",
+    "actualités", "prix", "résultat",
+    "hoy", "ahora", "último", "noticias", "precio",
+    "heute", "jetzt", "neu", "nachrichten", "preis",
+    "oggi", "adesso", "notizie", "prezzo",
+    "agora", "notícias", "preço",
+    "bugün", "şimdi", "haber", "fiyat"
+  ];
+
+  return words.some(word => q.includes(word));
+}
+
+function removeDuplicates(items) {
+  const unique = [];
+  const seen = new Set();
+
+  for (const item of items) {
+    const key = (
+      item.title +
+      "|" +
+      item.text
+    ).slice(0, 500);
+
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(item);
     }
   }
 
-  function render() {
-    chat.innerHTML = "";
+  return unique;
+}
 
-    if (messages.length > 0) {
-      welcome.style.display = "none";
-      quickPrompts.style.display = "none";
-    } else {
-      welcome.style.display = "block";
-      quickPrompts.style.display = "grid";
-    }
+export async function onRequestPost(context) {
+  try {
 
-    messages.forEach(message => {
-      addMessageToScreen(message.role, message.content);
-    });
-
-    window.scrollTo({
-      top: document.body.scrollHeight,
-      behavior: "smooth"
-    });
-  }
-
-  function addMessageToScreen(role, content) {
-    const wrapper = document.createElement("div");
-
-    wrapper.className =
-      "message " +
-      (role === "user" ? "user" : "assistant");
-
-    const bubble = document.createElement("div");
-
-    bubble.className = "bubble";
-    bubble.textContent = content;
-
-    wrapper.appendChild(bubble);
-    chat.appendChild(wrapper);
-
-    return bubble;
-  }
-
-  function setStatus(text) {
-    status.textContent = text;
-  }
-
-  async function sendMessage(text) {
-
-    text = text.trim();
-
-    if (!text || sendBtn.disabled) {
-      return;
-    }
-
-    messages.push({
-      role: "user",
-      content: text
-    });
-
-    saveMessages();
-    render();
-
-    input.value = "";
-    sendBtn.disabled = true;
-    setStatus("يفكر...");
-
-    const typingWrapper = document.createElement("div");
-
-    typingWrapper.className = "message assistant";
-
-    const typingBubble = document.createElement("div");
-
-    typingBubble.className = "bubble typing";
-    typingBubble.textContent = "ZIRI يفكر...";
-
-    typingWrapper.appendChild(typingBubble);
-    chat.appendChild(typingWrapper);
-
-    window.scrollTo({
-      top: document.body.scrollHeight,
-      behavior: "smooth"
-    });
-
-    try {
-
-      const response = await fetch("/api/chat", {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json"
+    if (!context.env.AI) {
+      return Response.json(
+        {
+          error:
+            "Workers AI Binding باسم AI غير مفعّل."
         },
-
-        body: JSON.stringify({
-          messages: messages.slice(-12)
-        })
-      });
-
-      let data;
-
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error("الخادم لم يرجع استجابة صحيحة.");
-      }
-
-      if (!response.ok) {
-        throw new Error(
-          data?.error || "حدث خطأ في خدمة ZIRI."
-        );
-      }
-
-      const answer =
-        data?.response ||
-        "لم أستطع توليد رد الآن.";
-
-      messages.push({
-        role: "assistant",
-        content: answer
-      });
-
-      saveMessages();
-
-      typingWrapper.remove();
-
-      render();
-
-      setStatus("جاهز");
-
-    } catch (error) {
-
-      typingWrapper.remove();
-
-      const errorMessage =
-        "تعذر الاتصال بخدمة ZIRI.\n\n" +
-        (error?.message || "خطأ غير معروف");
-
-      messages.push({
-        role: "assistant",
-        content: errorMessage
-      });
-
-      saveMessages();
-      render();
-
-      setStatus("حدث خطأ");
-    }
-
-    sendBtn.disabled = false;
-    input.focus();
-  }
-
-  function newChat() {
-
-    if (messages.length > 0) {
-
-      const confirmed = confirm(
-        "هل تريد بدء محادثة جديدة؟"
+        { status: 503 }
       );
+    }
 
-      if (!confirmed) {
-        return;
+    const body = await context.request.json();
+
+    const messages = Array.isArray(body.messages)
+      ? body.messages.slice(-12)
+      : [];
+
+    const safeMessages = messages
+      .filter(
+        m =>
+          m &&
+          (m.role === "user" ||
+           m.role === "assistant") &&
+          typeof m.content === "string"
+      )
+      .map(m => ({
+        role: m.role,
+        content: m.content.slice(0, 8000)
+      }));
+
+    if (!safeMessages.length) {
+      return Response.json(
+        {
+          error: "أرسل رسالة أولاً."
+        },
+        { status: 400 }
+      );
+    }
+
+    const lastUserMessage =
+      [...safeMessages]
+        .reverse()
+        .find(m => m.role === "user");
+
+    const question =
+      cleanText(lastUserMessage?.content || "");
+
+    const language = detectLanguage(question);
+
+    let searchResults = [];
+
+    if (question && needsSearch(question)) {
+
+      const [wikiResults, duckResults] =
+        await Promise.all([
+          searchWikipedia(question, language),
+          searchDuckDuckGo(question)
+        ]);
+
+      searchResults = removeDuplicates([
+        ...wikiResults,
+        ...duckResults
+      ]).slice(0, 10);
+    }
+
+    let searchContext = "";
+
+    if (searchResults.length) {
+
+      searchContext =
+        `
+
+EXTERNAL INFORMATION FOUND ONLINE
+Language used for the search: ${language}
+
+Use the following information carefully:
+
+${searchResults
+  .map(
+    (item, index) =>
+      `[SOURCE ${index + 1}]
+Title: ${item.title}
+Information: ${item.text}
+URL: ${item.url}`
+  )
+  .join("\n\n")}
+
+Important:
+- Treat search results as reference material, not absolute truth.
+- Do not invent details that are not supported.
+- If sources disagree, explain the uncertainty.
+- Mention useful sources naturally when appropriate.
+`;
+    }
+
+    const system = {
+      role: "system",
+      content:
+        IDENTITY +
+        `
+
+CURRENT USER LANGUAGE:
+${language}
+
+Always understand the user's language and answer naturally in that language.
+
+${searchContext}
+`
+    };
+
+    const aiMessages = [
+      system,
+      ...safeMessages.slice(0, -1),
+      {
+        role: "user",
+        content: question
       }
-    }
+    ];
 
-    messages = [];
+    const result = await context.env.AI.run(
+      MODEL,
+      {
+        messages: aiMessages,
+        max_tokens: 1200,
+        temperature: 0.45
+      }
+    );
 
-    localStorage.removeItem(CHAT_KEY);
+    const answer =
+      result?.response ||
+      "I could not generate a response right now.";
 
-    render();
-
-    setStatus("محادثة جديدة");
-    input.focus();
-  }
-
-  sendBtn.addEventListener("click", () => {
-    sendMessage(input.value);
-  });
-
-  input.addEventListener("keydown", event => {
-
-    if (
-      event.key === "Enter" &&
-      !event.shiftKey
-    ) {
-      event.preventDefault();
-
-      sendMessage(input.value);
-    }
-  });
-
-  newChatBtn.addEventListener("click", newChat);
-
-  document.querySelectorAll(".prompt").forEach(button => {
-
-    button.addEventListener("click", () => {
-
-      const prompt = button.dataset.prompt;
-
-      sendMessage(prompt);
+    return Response.json({
+      response: answer,
+      language,
+      searched: searchResults.length > 0,
+      sources: searchResults
+        .filter(item => item.url)
+        .slice(0, 5)
+        .map(item => ({
+          title: item.title,
+          url: item.url
+        }))
     });
 
-  });
+  } catch (error) {
 
-  aboutBtn.addEventListener("click", () => {
-    aboutModal.classList.add("show");
-  });
-
-  closeModal.addEventListener("click", () => {
-    aboutModal.classList.remove("show");
-  });
-
-  aboutModal.addEventListener("click", event => {
-
-    if (event.target === aboutModal) {
-      aboutModal.classList.remove("show");
-    }
-
-  });
-
-  loadMessages();
-  render();
-</script>
-
-</body>
-</html>
+    return Response.json(
+      {
+        error:
+          "خطأ في خدمة ZIRI: " +
+          (error?.message || "unknown")
+      },
+      { status: 500 }
+    );
+  }
+}
