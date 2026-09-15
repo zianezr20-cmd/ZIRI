@@ -304,11 +304,80 @@ button{cursor:pointer}
   .content{padding:25px 12px 20px}
   .hero{padding-top:25px}
   .msg{max-width:92%}
+}#splash{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  background:#03100b;
+  animation:splashOut .8s ease 2.4s forwards;
 }
-</style>
+
+.splash-logo{
+  width:115px;
+  height:115px;
+  object-fit:cover;
+  border-radius:28px;
+  border:2px solid #35d18c;
+}
+
+.splash-title{
+  margin-top:20px;
+  font-size:54px;
+  font-weight:900;
+  color:#fff;
+}
+
+.splash-subtitle{
+  margin-top:5px;
+  font-size:18px;
+  color:#d9eee5;
+}
+
+.splash-made{
+  margin-top:24px;
+  padding:9px 18px;
+  border:1px solid #35d18c;
+  border-radius:999px;
+  color:#35d18c;
+  font-weight:800;
+}
+
+.splash-line{
+  margin-top:18px;
+  font-size:17px;
+  color:#fff;
+}
+
+@keyframes splashOut{
+  to{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+  }
+}
+</style> 
 </head>
 
-<body>
+<body><div id="splash">
+  <div class="splash-glow"></div>
+
+  <img src="assets/ziane-logo.png" alt="ZIANE RACHID" class="splash-logo">
+
+  <div class="splash-title">ZIRI</div>
+
+  <div class="splash-subtitle">🇩🇿 مساعدك الذكي الجزائري</div>
+
+  <div class="splash-made">صناعة جزائرية 🇩🇿</div>
+
+  <div class="splash-line">
+    من الجزائر إلى العالم... ذكاءٌ بطموح جزائري
+  </div>
+</div>
 
 <div class="app">
 
