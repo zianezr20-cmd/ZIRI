@@ -440,6 +440,103 @@ button{cursor:pointer}
     pointer-events:none;
   }
 }
+
+/* ===== ZIRI V6 PRO ===== */
+:root{
+  --radius-xl:22px;
+  --radius-lg:18px;
+  --radius-md:14px;
+}
+body.light{
+  --bg:#f4f8f6;
+  --panel:#ffffff;
+  --panel2:#eef6f1;
+  --line:#d5e6dd;
+  --text:#102018;
+  --muted:#60766b;
+  --accent:#159b63;
+  --accent2:#0f7f51;
+  background:linear-gradient(135deg,#f7fbf9,#edf6f1);
+}
+body.light .top,
+body.light .composer{background:rgba(244,248,246,.92)}
+body.light .side{background:rgba(255,255,255,.92)}
+body.light .box,
+body.light .ai,
+body.light .image-card,
+body.light .profile,
+body.light .modal .card{background:#fff}
+body.light .quick button{background:#fff;color:#234238}
+
+.top-actions{display:flex;align-items:center;gap:8px}
+.icon-btn{
+  width:40px;height:40px;border-radius:12px;
+  border:1px solid var(--line);background:var(--panel2);
+  color:var(--text);display:inline-flex;align-items:center;justify-content:center;
+  font-size:17px
+}
+.icon-btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+.chat-tools{display:flex;gap:6px;margin-top:8px}
+.chat-tools button{
+  flex:1;padding:7px 8px;border-radius:9px;border:1px solid var(--line);
+  background:var(--panel2);color:var(--text);font-size:12px
+}
+.chat-tools button:hover{border-color:var(--accent)}
+.account{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 12px;border:1px solid var(--line);border-radius:14px;
+  background:var(--panel2)
+}
+.account-avatar{
+  width:38px;height:38px;border-radius:50%;
+  display:grid;place-items:center;background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:#fff;font-weight:900
+}
+.account small{display:block;color:var(--muted);margin-top:2px}
+.settings-list{display:grid;gap:8px;margin-top:12px}
+.setting-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;padding:11px 0;border-bottom:1px solid var(--line)
+}
+.switch{
+  width:44px;height:24px;border-radius:99px;border:0;background:#40564c;position:relative
+}
+.switch:after{
+  content:"";position:absolute;top:3px;right:3px;width:18px;height:18px;
+  border-radius:50%;background:#fff;transition:.2s
+}
+.switch.on{background:var(--accent)}
+.switch.on:after{right:23px}
+.file-input{display:none}
+.attach-btn{background:#153428;color:#dff8ed}
+body.light .attach-btn{background:#eaf5ef;color:#12392b}
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 10px;
+  border-radius:999px;border:1px solid var(--line);background:var(--panel2)
+}
+.source-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.source-links a{
+  display:inline-block;padding:6px 9px;border-radius:9px;
+  background:var(--panel2);border:1px solid var(--line);color:var(--accent);
+  font-size:11px;text-decoration:none
+}
+.toast{
+  position:fixed;left:50%;bottom:88px;transform:translate(-50%,14px);
+  opacity:0;pointer-events:none;transition:.22s;z-index:99999;
+  background:#0b2119;color:#fff;border:1px solid var(--line);
+  padding:10px 14px;border-radius:12px;box-shadow:0 18px 50px #0005
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.empty-note{
+  text-align:center;color:var(--muted);padding:18px;font-size:12px
+}
+@media(max-width:800px){
+  .top-actions{gap:5px}
+  .icon-btn{width:38px;height:38px}
+  .content{padding-bottom:18px}
+  .box{padding:8px}
+}
+
 </style> 
 </head>
 
@@ -487,10 +584,20 @@ button{cursor:pointer}
 
   <button class="btn" id="about">ℹ️ حول ZIRI</button>
 
-  <div class="profile">
-    <b>زائر</b><br>
-    <span>يمكنك تجربة ZIRI بدون إنشاء حساب.</span>
+  <div class="account">
+    <div class="account-avatar">Z</div>
+    <div>
+      <b>زائر</b>
+      <small>سجّل لاحقًا لمزامنة محادثاتك</small>
+    </div>
   </div>
+
+  <div class="profile">
+    <b>الحساب</b><br>
+    <span>تسجيل الدخول والحساب السحابي قادم في نسخة متقدمة.</span>
+  </div>
+
+  <button class="btn" id="settingsButton">⚙️ الإعدادات</button>
 
 </aside>
 
@@ -507,9 +614,12 @@ button{cursor:pointer}
     </div>
   </div>
 
-  <div class="status">
-    <span class="dot"></span>
-    <span id="status">جاهز</span>
+  <div class="top-actions">
+    <div class="status status-pill">
+      <span class="dot"></span>
+      <span id="status">جاهز</span>
+    </div>
+    <button class="icon-btn" id="themeButton" title="الوضع الليلي/الفاتح">☀️</button>
   </div>
 </header>
 
@@ -561,6 +671,13 @@ button{cursor:pointer}
       placeholder="اكتب رسالتك إلى ZIRI..."
     ></textarea>
 
+    <input id="fileInput" class="file-input" type="file" accept="image/*,.pdf,.txt,.md">
+    <button
+      class="icon-btn attach-btn"
+      id="attach"
+      title="إرفاق صورة أو ملف"
+    >📎</button>
+
     <button
       class="generate"
       id="generate"
@@ -584,6 +701,30 @@ button{cursor:pointer}
 </section>
 </main>
 </div>
+
+
+<div class="modal" id="settingsModal">
+  <div class="card">
+    <button class="close" id="closeSettings">×</button>
+    <h2>إعدادات ZIRI ⚙️</h2>
+    <div class="settings-list">
+      <div class="setting-row">
+        <div><b>المظهر</b><br><small style="color:var(--muted)">التبديل بين الفاتح والداكن</small></div>
+        <button class="switch on" id="themeSwitch"></button>
+      </div>
+      <div class="setting-row">
+        <div><b>الخصوصية</b><br><small style="color:var(--muted)">محادثات هذا الجهاز محفوظة محليًا</small></div>
+        <span>🔒</span>
+      </div>
+      <div class="setting-row">
+        <div><b>الحالة</b><br><small style="color:var(--muted)">زائر — بدون حساب سحابي</small></div>
+        <span>👤</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <div class="modal" id="modal">
 
@@ -609,6 +750,155 @@ ZIRI يستخدم Cloudflare Pages Functions وWorkers AI.
 </div>
 
 <script>
+
+/* ===== ZIRI V6 PRO JS ===== */
+const TOAST_MS = 2200;
+
+function showToast(message){
+  const t = document.querySelector("#toast");
+  if(!t) return;
+  t.textContent = message;
+  t.classList.add("show");
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove("show"), TOAST_MS);
+}
+
+function applyTheme(mode){
+  const light = mode === "light";
+  document.body.classList.toggle("light", light);
+  localStorage.setItem("ziri_theme", mode);
+  const btn = document.querySelector("#themeButton");
+  const sw = document.querySelector("#themeSwitch");
+  if(btn) btn.textContent = light ? "🌙" : "☀️";
+  if(sw) sw.classList.toggle("on", !light);
+}
+applyTheme(localStorage.getItem("ziri_theme") || "dark");
+
+document.querySelector("#themeButton")?.addEventListener("click", ()=>{
+  const next = document.body.classList.contains("light") ? "dark" : "light";
+  applyTheme(next);
+});
+
+document.querySelector("#settingsButton")?.addEventListener("click", ()=>{
+  document.querySelector("#settingsModal")?.classList.add("open");
+});
+document.querySelector("#closeSettings")?.addEventListener("click", ()=>{
+  document.querySelector("#settingsModal")?.classList.remove("open");
+});
+document.querySelector("#settingsModal")?.addEventListener("click", e=>{
+  if(e.target.id === "settingsModal") e.currentTarget.classList.remove("open");
+});
+document.querySelector("#themeSwitch")?.addEventListener("click", ()=>{
+  const next = document.body.classList.contains("light") ? "dark" : "light";
+  applyTheme(next);
+});
+
+/* File attachment: local preview for images; non-image files are safely announced. */
+document.querySelector("#attach")?.addEventListener("click", ()=>{
+  document.querySelector("#fileInput")?.click();
+});
+document.querySelector("#fileInput")?.addEventListener("change", e=>{
+  const f = e.target.files?.[0];
+  if(!f) return;
+  if(f.type.startsWith("image/")){
+    const url = URL.createObjectURL(f);
+    const m = document.querySelector("#messages");
+    const card = document.createElement("div");
+    card.className = "image-card";
+    card.innerHTML = "<div class='image-title'>📎 صورة مرفقة</div>";
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = f.name;
+    card.appendChild(img);
+    m.appendChild(card);
+    showToast("تم إرفاق الصورة للمحادثة");
+  } else {
+    showToast("تم اختيار الملف. تحليل الملفات يحتاج ربط Backend مخصص.");
+  }
+  e.target.value = "";
+});
+
+/* Add per-chat actions when a chat is active. */
+function renderChatTools(){
+  const side = document.querySelector("#history");
+  if(!side) return;
+  document.querySelector("#chatTools")?.remove();
+  if(!current) return;
+  const wrap = document.createElement("div");
+  wrap.id = "chatTools";
+  wrap.className = "chat-tools";
+
+  const rename = document.createElement("button");
+  rename.textContent = "✏️ تعديل";
+  rename.onclick = ()=>{
+    const title = prompt("اسم المحادثة الجديد:", current.title || "محادثة جديدة");
+    if(title && title.trim()){
+      current.title = title.trim().slice(0,60);
+      save(); renderHistory(); showToast("تم تغيير اسم المحادثة");
+    }
+  };
+
+  const exportBtn = document.createElement("button");
+  exportBtn.textContent = "⬇️ تصدير";
+  exportBtn.onclick = ()=>{
+    const text = (current.messages || []).map(x =>
+      (x.role === "user" ? "أنت" : "ZIRI") + ":\n" + x.content
+    ).join("\n\n----------------\n\n");
+    const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ziri-chat.txt";
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    showToast("تم تصدير المحادثة");
+  };
+
+  const del = document.createElement("button");
+  del.textContent = "🗑️ حذف";
+  del.onclick = ()=>{
+    if(!confirm("حذف هذه المحادثة؟")) return;
+    chats = chats.filter(c => c.id !== current.id);
+    current = chats[0] || null;
+    save(); renderHistory(); renderMessages(); showToast("تم حذف المحادثة");
+  };
+
+  wrap.append(rename, exportBtn, del);
+  side.parentElement.insertBefore(wrap, side);
+}
+
+/* Patch renderHistory to also render tool buttons. */
+const __renderHistoryOriginal = renderHistory;
+renderHistory = function(filter=""){
+  __renderHistoryOriginal(filter);
+  renderChatTools();
+};
+
+/* Copy button for AI messages + retry button. */
+const __renderMessagesOriginal = renderMessages;
+renderMessages = function(){
+  __renderMessagesOriginal();
+  document.querySelectorAll(".msg.ai").forEach(msg=>{
+    if(msg.querySelector(".msg-actions")) return;
+    const actions = document.createElement("div");
+    actions.className = "msg-actions";
+    actions.style.cssText = "display:flex;gap:6px;margin-top:8px";
+    const copy = document.createElement("button");
+    copy.className = "icon-btn";
+    copy.style.width = "34px";
+    copy.style.height = "34px";
+    copy.textContent = "📋";
+    copy.title = "نسخ";
+    copy.onclick = ()=>{
+      const meta = msg.querySelector(".meta");
+      const text = msg.innerText.replace(meta?.innerText || "", "").trim();
+      navigator.clipboard?.writeText(text);
+      showToast("تم نسخ الرد");
+    };
+    actions.appendChild(copy);
+    msg.appendChild(actions);
+  });
+};
+
 
 const KEY = "ziri_v5_chats";
 
